@@ -1,11 +1,10 @@
 const express = require('express');
-var bcrypt = require('bcryptjs');
 
 const auth = require('../middlewares/autentication').verificaToken;
 
 const app = express();
 
-const Usuarios = require('../models/usuario');
+const Hospital = require('../models/hospital');
 
 
 app.get('/', async (req, res) => {
@@ -58,21 +57,12 @@ app.get('/', async (req, res) => {
     
 
   try {
-    // const pagina = ((req.query.pagina) * 5) || 0;
-
-    // const qtd = req.query.qtd || 0; /* VALIDAÇÃO SERÁ FEITA NO 'JOI()' */
-    const qtd = Number(req.query.qtd) || 0;
-
-    const usuarios = await Usuarios.find({}, 'name email img role')
-                                    .skip(qtd)
-                                    .limit(1);
-
-    const total = await Usuarios.count({});
+    const hospitais = await Hospital.find({})
+                                    .populate('usuario', 'name email');
 
     res.status(200).json({
       ok: false,
-      total,
-      usuarios
+      hospitais
     });
 
     // res.status(200).json(usuarios);
@@ -81,7 +71,7 @@ app.get('/', async (req, res) => {
     res.status(500).json(
     {
       ok: true,
-      mensage: 'erro na busca de usuarios',
+      mensage: 'erro na busca de hospitais',
       errors: error
     })
 
@@ -94,32 +84,27 @@ app.post('/', auth, (req, res) => {
 
   const body = req.body;
 
-  console.log(body);
-
-  const usuario = new Usuarios({
+  const hospital = new Hospital({
     name: body.name,
-    email: body.email,
-    password: bcrypt.hashSync(body.password, 10),
-    img: body.img,
-    role: body.role,
+    usuario: req.usuario._id
   });
 
-  console.log(usuario);
+//   console.log(usuario);
 
-  usuario.save((err, newUsuario) => {
+  hospital.save((err, newHospitais) => {
     if (err) {
       return res.status(400).json(
         {
           ok: true,
-          mensage: 'erro para gravar o usuario',
+          mensage: 'erro para gravar o hospital',
           errors: err
         }
       );  
     }
 
-    res.status(200).json({
+    res.status(201).json({
       ok: true,
-      newUsuario
+      newHospitais
     });
   });
 
@@ -133,18 +118,18 @@ app.put('/:id', auth, (req, res) => {
   //   id: req.params.id
   // });
 
-  Usuarios.findById(req.params.id, (err, findusuario) => {
+  Hospital.findById(req.params.id, (err, findHospitais) => {
     if (err) {
       return res.status(500).json(
         {
           ok: false,
-          mensage: 'erro para buscar o usuario',
+          mensage: 'erro para buscar o hospitais',
           errors: err
         }
       );  
     }
 
-    if (!findusuario) {
+    if (!findHospitais) {
       return res.status(400).json(
         {
           ok: false,
@@ -154,16 +139,15 @@ app.put('/:id', auth, (req, res) => {
       );  
     }
 
-    findusuario.name = req.body.name;
-    findusuario.email = req.body.email;
-    findusuario.role = req.body.role;
+    findHospitais.name = req.body.name;
+    findHospitais.usuario = req.usuario._id;
 
-    findusuario.save((err, newUsuario) => {
+    findHospitais.save((err, newHospitais) => {
       if (err) {
         return res.status(400).json(
           {
             ok: true,
-            mensage: 'erro para gravar o usuario',
+            mensage: 'erro para gravar o hospitais',
             errors: err
           }
         );  
@@ -171,7 +155,7 @@ app.put('/:id', auth, (req, res) => {
   
       res.status(200).json({
         ok: true,
-        newUsuario
+        newHospitais
       });
     });
   });
@@ -179,12 +163,12 @@ app.put('/:id', auth, (req, res) => {
 });
 
 app.delete('/:id', auth, (req, res) => {
-  Usuarios.findByIdAndRemove(req.params.id, (err, deletado) => {
+  Hospital.findByIdAndRemove(req.params.id, (err, deletado) => {
 
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensage: 'error para deletar o usuário',
+        mensage: 'error para deletar o hospital',
         error: err
       });
     }
