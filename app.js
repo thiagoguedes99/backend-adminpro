@@ -53,3 +53,10 @@ app.listen(3000, () => {
   // %s - é a variável 'online'.
   // \x1b[0m - faz o resert de cores para o padrão (branco).
 });
+
+
+// client ID
+// 741096697265-phubr9ktscv968auhldt8k9sh8s7c73r.apps.googleusercontent.com
+
+// client secret
+// 1mUcJP4oZVOmMHbqfCBvai12
