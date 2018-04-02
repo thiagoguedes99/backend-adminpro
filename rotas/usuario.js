@@ -90,7 +90,8 @@ app.get('/', async (req, res) => {
 
 });
 
-app.post('/', auth, (req, res) => {
+// app.post('/', auth, (req, res) => {
+app.post('/', (req, res) => {
 
   const body = req.body;
 

@@ -13,7 +13,7 @@ const GOOGLE_SECRET = '1mUcJP4oZVOmMHbqfCBvai12';
 
 
 app.post('/', (req, res) => {
-
+console.log(req.body.email);
   Usuarios.findOne( { email: req.body.email } , (err, usuario) => {
 
     if (err) {
@@ -44,7 +44,7 @@ app.post('/', (req, res) => {
 
     // necessário para retirar a propriedade 'password' do objeto usuário.
     const usuarioFinal = {
-      _id: usuario._id,
+      id: usuario._id,
       name: usuario.name,
       email: usuario.email,
       role: usuario.role,
@@ -62,7 +62,9 @@ app.post('/', (req, res) => {
 app.post('/google', (req, res) => {
   const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_SECRET);
 
-  const token = req.params.token;
+  const token = req.body.token;
+  console.log('meu token');
+  console.log(token);
 
   async function verify() {
     const ticket = await client.verifyIdToken({
@@ -76,6 +78,8 @@ app.post('/google', (req, res) => {
     // If request specified a G Suite domain:
     //const domain = payload['hd'];
 
+    console.log('payload');
+    console.log(payload);
     Usuarios.findOne({ email: payload.email }, (err, usuario) => {
       if (err) {
         return res.status(500).json({
@@ -98,9 +102,11 @@ app.post('/google', (req, res) => {
 
           // necessário para retirar a propriedade 'password' do objeto usuário.
           const usuarioFinal = {
-            _id: usuario._id,
+            id: usuario._id,
             name: usuario.name,
             email: usuario.email,
+            img: usuario.img,
+            google: usuario.google,
             role: usuario.role,
           }
 
@@ -127,19 +133,22 @@ app.post('/google', (req, res) => {
             
           }
 
-          
+          console.log('vai criar token');
           // criar token - payload = o usuário com os dados que será criptografado em token
           const token = jwt.sign({ usuario: userDB}, '@chave-secreta_do_token', {expiresIn: 14400}); // 4 horas
           // fim criar token
 
+          console.log('vai criar obj');
           // necessário para retirar a propriedade 'password' do objeto usuário.
           const usuarioFinal = {
-            _id: userDB._id,
+            id: userDB._id,
             name: userDB.name,
             email:userDB.email,
+            img: userDB.img,
             role: userDB.role,
           }
 
+          console.log('vai mandar 200');
           return res.status(200).json({
             ok: true,
             usuario: usuarioFinal,
@@ -151,11 +160,12 @@ app.post('/google', (req, res) => {
     });
   }
   verify().catch(
-    res.status(400).json({
-      ok: false,
-      mensage: 'deu merda no login do google'
-    }),
-    console.error
+    console.error,
+    // res.status(400).json({
+    //   ok: false,
+    //   mensage: 'deu merda no login do google'
+    // }),
+    // console.error
   );
 
 });

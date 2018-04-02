@@ -17,6 +17,11 @@ app.put('/:tipo/:id', async (req, res) => {
   const tipoCollection = req.params.tipo;
   const id = req.params.id;
 
+  if (req.files) {
+    console.log('tem foto aqui!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    console.log(req.files)
+  }
+
   if (!req.files) {
     res.status(400).json(
       {
@@ -104,7 +109,7 @@ app.put('/:tipo/:id', async (req, res) => {
       return res.status(200).json(
         {
           ok: true,
-          Usuario: usu
+          usuario: usu
         }
       );
     }
